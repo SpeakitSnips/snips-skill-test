@@ -1,4 +1,4 @@
-hermes_python>=0.1
+hermes-python>=0.1
 future==0.16
 requests
 pytoml
