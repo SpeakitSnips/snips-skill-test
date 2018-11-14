@@ -6,6 +6,7 @@ from hermes_python.hermes import Hermes
 from hermes_python.ontology import *
 import io
 from ctxmngr import ContextManager
+from homein import HomeInMQTT
 import pytoml
 
 
@@ -27,13 +28,13 @@ def read_configuration_file(configuration_file):
         return dict()
 
 def subscribe_intent_callback(hermes, intentMessage):
-    global context
+	global context, homein
     conf = read_configuration_file(CONFIG_INI)
-    action_wrapper(hermes, intentMessage, conf, context)
+    action_wrapper(hermes, intentMessage, conf, context, homein)
 
 
 def action_wrapper(hermes, intentMessage, conf, context):
-    hermes.publish_end_session(intentMessage.session_id, "Lorem ipsum")
+    hermes.publish_end_session(intentMessage.session_id, "Bonjour depuis Gitlab!")
 
 
 if __name__ == "__main__":
@@ -41,8 +42,14 @@ if __name__ == "__main__":
     ctxHost, ctxPort = speakit_config["homein"]["context"].split(":")
     ctxPort = int(ctxPort)
 
-    context = ContextManager(ctxHost,ctxPort)
+    homeinHost, homeinPort = speakit_config["homein"]["mqtt"].split(":")
+    homeinPort = int(homeinPort)
 
+    site = speakit_config["speakit"]["site"]
+	
+    context = ContextManager(ctxHost,ctxPort)
+    homein = HomeInMQTT(homeinHost, homeinPort, site)
+	
     with Hermes("localhost:1883") as h:
-        h.subscribe_intent("Alice:OtherTestNonAscii", subscribe_intent_callback) \
+        h.subscribe_intent("Alice:TestGit", subscribe_intent_callback) \
          .start()

@@ -1,1 +1,1 @@
-# Just a test for non unicode characters in App name
+# Just a test skill saying Hello from gitlab
