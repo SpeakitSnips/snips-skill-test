@@ -58,6 +58,6 @@ if __name__ == "__main__":
     context = ContextManager(ctxHost,ctxPort)
     homein = HomeInMQTT(homeinHost, homeinPort, speakit_config, context)
 
-    with Hermes(speakit_config["speakit"]["mqtt"]) as h:
+    with Hermes(str(speakit_config["speakit"]["mqtt"])) as h:
         h.subscribe_intent("Alice:TestGit", subscribe_intent_callback) \
          .start()
