@@ -1,5 +1,5 @@
 hermes-python>=0.1
-future==0.16
+future
 requests
 pytoml
 paho_mqtt
