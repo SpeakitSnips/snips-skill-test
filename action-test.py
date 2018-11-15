@@ -8,6 +8,9 @@ import io
 from ctxmngr import ContextManager
 from homein import HomeInMQTT
 import pytoml
+import random
+import string
+import json
 
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
@@ -17,6 +20,14 @@ class SnipsConfigParser(ConfigParser.SafeConfigParser):
     def to_dict(self):
         return {section : {option_name : option for option_name, option in self.items(section)} for section in self.sections()}
 
+def _random_id():
+    return "".join(
+        [random.choice(string.ascii_uppercase + string.digits) for i in range(16)]
+    )
+
+def _get_speakit_conf(key, default_value):
+    global speakit_config
+    return speakit_config["speakit"].get(key, default_value)
 
 def read_configuration_file(configuration_file):
     try:
@@ -28,28 +39,25 @@ def read_configuration_file(configuration_file):
         return dict()
 
 def subscribe_intent_callback(hermes, intentMessage):
-    global context, homein
+    global homein
     conf = read_configuration_file(CONFIG_INI)
-    action_wrapper(hermes, intentMessage, conf, context, homein)
+    action_wrapper(hermes, intentMessage, conf, homein)
 
 
-def action_wrapper(hermes, intentMessage, conf, context, homein):
+def action_wrapper(hermes, intentMessage, conf, homein):
     hermes.publish_end_session(intentMessage.session_id, "Bonjour depuis Gitlab!")
-
 
 if __name__ == "__main__":
     speakit_config = pytoml.loads(open("/etc/speakit.toml").read())
     ctxHost, ctxPort = speakit_config["homein"]["context"].split(":")
     ctxPort = int(ctxPort)
-
+    
     homeinHost, homeinPort = speakit_config["homein"]["mqtt"].split(":")
     homeinPort = int(homeinPort)
 
-    site = speakit_config["speakit"]["site"]
-
     context = ContextManager(ctxHost,ctxPort)
-    homein = HomeInMQTT(homeinHost, homeinPort, site)
+    homein = HomeInMQTT(homeinHost, homeinPort, speakit_config, context)
 
-    with Hermes("localhost:1883") as h:
+    with Hermes(speakit_config["speakit"]["mqtt"]) as h:
         h.subscribe_intent("Alice:TestGit", subscribe_intent_callback) \
          .start()
