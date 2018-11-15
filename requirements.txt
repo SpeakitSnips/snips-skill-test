@@ -3,4 +3,4 @@ future
 requests
 pytoml
 paho_mqtt
-pyaudio
+PyYAML
