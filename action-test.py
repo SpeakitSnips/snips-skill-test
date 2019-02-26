@@ -3,6 +3,7 @@
 
 import ConfigParser
 from hermes_python.hermes import Hermes
+from hermes_python.ffi.utils import MqttOptions
 from hermes_python.ontology import *
 import io
 from ctxmngr import ContextManager
@@ -48,6 +49,8 @@ def action_wrapper(hermes, intentMessage, conf, homein):
     hermes.publish_end_session(intentMessage.session_id, "Bonjour depuis Gitlab!")
 
 if __name__ == "__main__":
+    mqtt_opts = MqttOptions()
+    
     speakit_config = pytoml.loads(open("/etc/speakit.toml").read())
     ctxHost, ctxPort = speakit_config["homein"]["context"].split(":")
     ctxPort = int(ctxPort)
@@ -58,6 +61,6 @@ if __name__ == "__main__":
     context = ContextManager(ctxHost,ctxPort)
     homein = HomeInMQTT(homeinHost, homeinPort, speakit_config, context)
 
-    with Hermes(str(speakit_config["speakit"]["mqtt"])) as h:
+    with Hermes(mqtt_options=mqtt_opts) as h:
         h.subscribe_intent("Alice:TestGit", subscribe_intent_callback) \
          .start()
